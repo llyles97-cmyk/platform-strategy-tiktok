@@ -4,7 +4,6 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/Focus-Platform%20Strategy-black?style=for-the-badge" />
-  <img src="https://img.shields.io/badge/Domain-Music%20%26%20Media-purple?style=for-the-badge" />
   <img src="https://img.shields.io/badge/Framework-Audience%20Intelligence-blue?style=for-the-badge" />
   <img src="https://img.shields.io/badge/Type-Portfolio%20Project-green?style=for-the-badge" />
 </p>
@@ -13,8 +12,6 @@
   <a href="https://lylesmomportfolio.my.canva.site"><strong>View Full Write-Up</strong></a>
   &nbsp;·&nbsp;
   <a href="./presentation/How-Attention-Actually-Moves-on-TikTok.pdf"><strong>View Presentation</strong></a>
-  &nbsp;·&nbsp;
-  <a href="https://instagram.com/cultcirculation"><strong>@cultcirculation</strong></a>
 </p>
 
 ---
