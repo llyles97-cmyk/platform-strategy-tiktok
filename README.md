@@ -166,8 +166,8 @@ It shows how:
 - Strategy must adapt to decentralized distribution  
 
 ---
-```bash
 ## Repository Structure
+```bash
 platform-strategy-tiktok/
 │
 ├── README.md
