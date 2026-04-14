@@ -1,0 +1,1033 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>How Attention Actually Moves on TikTok — Lyles Mom</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=DM+Mono:ital,wght@0,300;0,400;1,300&family=Instrument+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --black: #0a0a0a;
+    --white: #f5f2ed;
+    --cream: #e8e3da;
+    --accent: #c8a96e;
+    --accent-dim: #7a6540;
+    --red: #c0392b;
+    --mid: #2a2a2a;
+    --border: rgba(200,169,110,0.25);
+    --mono: 'DM Mono', monospace;
+    --serif: 'Playfair Display', serif;
+    --sans: 'Instrument Sans', sans-serif;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--black);
+    color: var(--white);
+    font-family: var(--sans);
+    font-weight: 300;
+    line-height: 1.7;
+    overflow-x: hidden;
+  }
+
+  /* NOISE OVERLAY */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 999;
+    opacity: 0.6;
+  }
+
+  /* PROGRESS BAR */
+  #progress {
+    position: fixed;
+    top: 0; left: 0;
+    height: 2px;
+    background: var(--accent);
+    width: 0%;
+    z-index: 1000;
+    transition: width 0.1s linear;
+  }
+
+  /* NAV */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    padding: 20px 48px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: linear-gradient(to bottom, rgba(10,10,10,0.95), transparent);
+  }
+
+  .nav-brand {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    color: var(--accent);
+    text-transform: uppercase;
+    text-decoration: none;
+  }
+
+  .nav-links {
+    display: flex;
+    gap: 32px;
+    list-style: none;
+  }
+
+  .nav-links a {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: rgba(245,242,237,0.45);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+
+  .nav-links a:hover { color: var(--accent); }
+
+  /* HERO */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 0 48px 80px;
+    position: relative;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .hero-eyebrow {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 28px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .hero-eyebrow::before {
+    content: '';
+    display: block;
+    width: 40px;
+    height: 1px;
+    background: var(--accent);
+  }
+
+  .hero h1 {
+    font-family: var(--serif);
+    font-size: clamp(48px, 8vw, 110px);
+    font-weight: 900;
+    line-height: 0.92;
+    letter-spacing: -0.02em;
+    max-width: 900px;
+    margin-bottom: 40px;
+  }
+
+  .hero h1 em {
+    font-style: italic;
+    color: var(--accent);
+  }
+
+  .hero-meta {
+    display: flex;
+    gap: 48px;
+    align-items: flex-start;
+  }
+
+  .hero-thesis {
+    max-width: 520px;
+    font-size: 16px;
+    color: rgba(245,242,237,0.7);
+    line-height: 1.75;
+    border-left: 1px solid var(--accent);
+    padding-left: 24px;
+  }
+
+  .hero-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    margin-left: auto;
+  }
+
+  .stat-item {
+    text-align: right;
+  }
+
+  .stat-num {
+    font-family: var(--serif);
+    font-size: 36px;
+    font-weight: 700;
+    color: var(--accent);
+    display: block;
+    line-height: 1;
+  }
+
+  .stat-label {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: rgba(245,242,237,0.4);
+  }
+
+  .hero-bg-text {
+    position: absolute;
+    top: 50%;
+    right: -20px;
+    transform: translateY(-50%);
+    font-family: var(--serif);
+    font-size: clamp(120px, 20vw, 280px);
+    font-weight: 900;
+    color: rgba(200,169,110,0.04);
+    pointer-events: none;
+    user-select: none;
+    white-space: nowrap;
+    letter-spacing: -0.05em;
+  }
+
+  /* SECTIONS */
+  section {
+    padding: 96px 48px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .section-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--accent-dim);
+    margin-bottom: 48px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  h2 {
+    font-family: var(--serif);
+    font-size: clamp(32px, 4vw, 56px);
+    font-weight: 700;
+    line-height: 1.1;
+    margin-bottom: 32px;
+  }
+
+  h2 em { font-style: italic; color: var(--accent); }
+
+  p {
+    font-size: 16px;
+    color: rgba(245,242,237,0.72);
+    line-height: 1.8;
+    max-width: 680px;
+    margin-bottom: 20px;
+  }
+
+  /* FRAMEWORK */
+  .framework-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 1px;
+    background: var(--border);
+    margin-top: 56px;
+    border: 1px solid var(--border);
+  }
+
+  .framework-cell {
+    background: var(--black);
+    padding: 36px 28px;
+    position: relative;
+    transition: background 0.3s;
+  }
+
+  .framework-cell:hover { background: var(--mid); }
+
+  .framework-cell.highlight { background: rgba(200,169,110,0.06); }
+
+  .cell-num {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--accent-dim);
+    letter-spacing: 0.1em;
+    margin-bottom: 20px;
+    display: block;
+  }
+
+  .cell-title {
+    font-family: var(--serif);
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 12px;
+    line-height: 1.2;
+  }
+
+  .cell-measure {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--accent);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+    display: block;
+  }
+
+  .cell-desc {
+    font-size: 13px;
+    color: rgba(245,242,237,0.55);
+    line-height: 1.65;
+    margin-bottom: 0;
+    max-width: 100%;
+  }
+
+  .cell-badge {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    background: var(--accent);
+    color: var(--black);
+    font-family: var(--mono);
+    font-size: 8px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 4px 8px;
+  }
+
+  /* CASE STUDIES */
+  .case-study {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 64px;
+    padding: 64px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .case-study:last-child { border-bottom: none; }
+
+  .case-meta {
+    position: sticky;
+    top: 120px;
+    align-self: start;
+  }
+
+  .case-num {
+    font-family: var(--mono);
+    font-size: 72px;
+    font-weight: 300;
+    color: rgba(200,169,110,0.15);
+    line-height: 1;
+    margin-bottom: 8px;
+    letter-spacing: -0.04em;
+  }
+
+  .case-artist {
+    font-family: var(--serif);
+    font-size: 28px;
+    font-weight: 700;
+    line-height: 1.1;
+    margin-bottom: 6px;
+  }
+
+  .case-song {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--accent);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 24px;
+    display: block;
+  }
+
+  .case-type {
+    display: inline-block;
+    border: 1px solid var(--border);
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    padding: 6px 12px;
+    color: rgba(245,242,237,0.45);
+    margin-bottom: 8px;
+  }
+
+  .case-content h3 {
+    font-family: var(--serif);
+    font-size: 22px;
+    font-weight: 700;
+    margin: 40px 0 16px;
+    color: var(--white);
+  }
+
+  .case-content h3:first-child { margin-top: 0; }
+
+  .case-content p {
+    max-width: 100%;
+    font-size: 15px;
+  }
+
+  .insight-block {
+    background: rgba(200,169,110,0.06);
+    border-left: 2px solid var(--accent);
+    padding: 24px 28px;
+    margin: 32px 0;
+  }
+
+  .insight-block .insight-label {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 10px;
+    display: block;
+  }
+
+  .insight-block p {
+    font-size: 15px;
+    color: var(--white);
+    margin-bottom: 0;
+    font-style: italic;
+  }
+
+  .metric-row {
+    display: flex;
+    gap: 32px;
+    flex-wrap: wrap;
+    margin: 28px 0;
+  }
+
+  .metric {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .metric-val {
+    font-family: var(--serif);
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--accent);
+    line-height: 1;
+  }
+
+  .metric-desc {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgba(245,242,237,0.4);
+  }
+
+  .layer-breakdown {
+    margin: 28px 0;
+  }
+
+  .layer-row {
+    display: grid;
+    grid-template-columns: 140px 1fr;
+    gap: 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .layer-row:first-child { border-top: 1px solid var(--border); }
+
+  .layer-name {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent-dim);
+    padding: 16px 0;
+    border-right: 1px solid var(--border);
+  }
+
+  .layer-val {
+    font-size: 14px;
+    color: rgba(245,242,237,0.75);
+    padding: 16px 24px;
+    margin-bottom: 0;
+    line-height: 1.6;
+  }
+
+  /* SYNTHESIS */
+  .insight-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    margin-top: 48px;
+  }
+
+  .insight-card {
+    background: var(--black);
+    padding: 40px 36px;
+    transition: background 0.3s;
+  }
+
+  .insight-card:hover { background: var(--mid); }
+
+  .insight-card .num {
+    font-family: var(--serif);
+    font-size: 48px;
+    font-weight: 900;
+    color: rgba(200,169,110,0.2);
+    line-height: 1;
+    margin-bottom: 16px;
+  }
+
+  .insight-card h4 {
+    font-family: var(--serif);
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 12px;
+    line-height: 1.2;
+  }
+
+  .insight-card p {
+    font-size: 14px;
+    color: rgba(245,242,237,0.6);
+    max-width: 100%;
+    margin-bottom: 0;
+  }
+
+  /* IMPLICATIONS */
+  .implication-list {
+    margin-top: 48px;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    border: 1px solid var(--border);
+  }
+
+  .implication-item {
+    display: grid;
+    grid-template-columns: 60px 1fr auto;
+    align-items: center;
+    gap: 32px;
+    padding: 32px 36px;
+    border-bottom: 1px solid var(--border);
+    transition: background 0.25s;
+    cursor: default;
+  }
+
+  .implication-item:last-child { border-bottom: none; }
+  .implication-item:hover { background: rgba(200,169,110,0.04); }
+
+  .impl-idx {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--accent-dim);
+    letter-spacing: 0.1em;
+  }
+
+  .impl-text {
+    font-family: var(--serif);
+    font-size: 20px;
+    font-weight: 400;
+    font-style: italic;
+    line-height: 1.3;
+    color: var(--white);
+  }
+
+  .impl-tag {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--accent);
+    white-space: nowrap;
+    border: 1px solid var(--border);
+    padding: 5px 10px;
+  }
+
+  /* FOOTER */
+  footer {
+    padding: 64px 48px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+  }
+
+  .footer-left .brand {
+    font-family: var(--serif);
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--accent);
+    display: block;
+    margin-bottom: 8px;
+  }
+
+  .footer-left p {
+    font-size: 13px;
+    color: rgba(245,242,237,0.3);
+    margin-bottom: 0;
+    max-width: 320px;
+  }
+
+  .footer-right {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: rgba(245,242,237,0.25);
+    text-align: right;
+  }
+
+  /* ANIMATIONS */
+  .fade-up {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+
+  .fade-up.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .delay-1 { transition-delay: 0.1s; }
+  .delay-2 { transition-delay: 0.2s; }
+  .delay-3 { transition-delay: 0.3s; }
+  .delay-4 { transition-delay: 0.4s; }
+  .delay-5 { transition-delay: 0.5s; }
+
+  /* RESPONSIVE */
+  @media (max-width: 900px) {
+    nav { padding: 20px 24px; }
+    .hero { padding: 0 24px 64px; }
+    section { padding: 64px 24px; }
+    .framework-grid { grid-template-columns: 1fr 1fr; }
+    .framework-cell:last-child { grid-column: 1 / -1; }
+    .case-study { grid-template-columns: 1fr; gap: 32px; }
+    .case-meta { position: static; }
+    .insight-grid { grid-template-columns: 1fr; }
+    .hero-meta { flex-direction: column; gap: 32px; }
+    .hero-stats { margin-left: 0; flex-direction: row; flex-wrap: wrap; gap: 24px; }
+    .implication-item { grid-template-columns: 40px 1fr; }
+    .impl-tag { display: none; }
+    footer { flex-direction: column; gap: 32px; align-items: flex-start; }
+  }
+</style>
+</head>
+<body>
+
+<div id="progress"></div>
+
+<nav>
+  <a href="#" class="nav-brand">Lyles Mom — Portfolio</a>
+  <ul class="nav-links">
+    <li><a href="#framework">Framework</a></li>
+    <li><a href="#cases">Case Studies</a></li>
+    <li><a href="#synthesis">Synthesis</a></li>
+    <li><a href="#implications">Implications</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-bg-text">ATTENTION</div>
+  <div class="hero-eyebrow">Platform Strategy — Music & TikTok — 2024</div>
+  <h1>How <em>Attention</em><br>Actually Moves<br>on TikTok</h1>
+  <div class="hero-meta">
+    <p class="hero-thesis">
+      TikTok doesn't reward good music — it rewards music that sustains attention. 
+      This project maps the system that determines what goes viral, and what that 
+      means for artists, labels, and platform strategy.
+    </p>
+    <div class="hero-stats">
+      <div class="stat-item">
+        <span class="stat-num">84%</span>
+        <span class="stat-label">of Billboard Global 200 hits<br>went viral on TikTok first</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-num">5</span>
+        <span class="stat-label">Framework Layers</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-num">3</span>
+        <span class="stat-label">Case Studies</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FRAMEWORK -->
+<section id="framework">
+  <div class="section-label">01 — The Attention System Framework</div>
+  <h2>A <em>Five-Layer Model</em><br>for Music Virality</h2>
+  <p>
+    Most virality frameworks stop at engagement metrics. This one goes further — 
+    separating the mechanics of attention capture from the mechanics of audio spread. 
+    On TikTok, a song can go viral without the artist ever posting a single video. 
+    That distinction is the whole point.
+  </p>
+
+  <div class="framework-grid fade-up">
+    <div class="framework-cell">
+      <span class="cell-num">01</span>
+      <div class="cell-title">Hook</div>
+      <span class="cell-measure">Entry Point</span>
+      <p class="cell-desc">First 1–3 seconds. Stops the scroll. For music, this is which <em>part</em> of the song anchors the moment — drop, lyric, sample, or silence.</p>
+    </div>
+    <div class="framework-cell">
+      <span class="cell-num">02</span>
+      <div class="cell-title">Retention</div>
+      <span class="cell-measure">Watch Behavior</span>
+      <p class="cell-desc">% watched, loops, rewatches. Does the format delay the payoff? Does the song create tension that holds the viewer through the end?</p>
+    </div>
+    <div class="framework-cell">
+      <span class="cell-num">03</span>
+      <div class="cell-title">Engagement</div>
+      <span class="cell-measure">Signal Strength</span>
+      <p class="cell-desc">Saves → Shares → Comments → Likes. Is the comment section reacting to the song or to the video? That distinction changes the diagnosis.</p>
+    </div>
+    <div class="framework-cell">
+      <span class="cell-num">04</span>
+      <div class="cell-title">Distribution</div>
+      <span class="cell-measure">Algorithm Push</span>
+      <p class="cell-desc">When TikTok decides to scale content. Organic sound spread vs. creator-driven. Platform-correlated artists see 11% week-over-week streaming growth vs. 3% for others.</p>
+    </div>
+    <div class="framework-cell highlight">
+      <span class="cell-num">05</span>
+      <div class="cell-title">Audio<br>Portability</div>
+      <span class="cell-measure">Sound Travel</span>
+      <div class="cell-badge">Differentiator</div>
+      <p class="cell-desc">How far the sound travels without the original video. # of uses, stitch/duet behavior, meme adoption. This layer is what makes the framework music-native.</p>
+    </div>
+  </div>
+</section>
+
+<!-- CASE STUDIES -->
+<section id="cases">
+  <div class="section-label">02 — Case Studies</div>
+  <h2>Three Songs.<br><em>Three Mechanisms.</em></h2>
+  <p>Each case study was selected to isolate a different layer of the framework. Together they cover the full spectrum of how music actually moves on TikTok.</p>
+
+  <!-- CASE 1 -->
+  <div class="case-study fade-up">
+    <div class="case-meta">
+      <div class="case-num">01</div>
+      <div class="case-artist">Sabrina Carpenter</div>
+      <span class="case-song">"Espresso" — 2024</span>
+      <div class="case-type">Lyric-as-Meme Machine</div>
+    </div>
+    <div class="case-content">
+      <h3>The Setup</h3>
+      <p>
+        "Espresso" dropped April 11, 2024 — the same week Carpenter played Coachella. 
+        It peaked at #3 on the Billboard Hot 100, topped charts in 20+ countries, and 
+        spent 65 weeks charting. Island Records (UMG) engineered the moment deliberately: 
+        Coachella slot, Taylor Swift tour support, Saltburn/Barry Keoghan cultural adjacency.
+      </p>
+
+      <div class="metric-row">
+        <div class="metric">
+          <span class="metric-val">#3</span>
+          <span class="metric-desc">Billboard Hot 100 Peak</span>
+        </div>
+        <div class="metric">
+          <span class="metric-val">65 wks</span>
+          <span class="metric-desc">Time on Chart</span>
+        </div>
+        <div class="metric">
+          <span class="metric-val">20+</span>
+          <span class="metric-desc">Countries Charted #1</span>
+        </div>
+        <div class="metric">
+          <span class="metric-val">257M</span>
+          <span class="metric-desc">Spotify Streams (early)</span>
+        </div>
+      </div>
+
+      <h3>Framework Breakdown</h3>
+      <div class="layer-breakdown">
+        <div class="layer-row">
+          <span class="layer-name">Hook</span>
+          <p class="layer-val">The opening melody is clean and Italo-disco-adjacent — but the real hook was the lyric. "That's that me espresso" is grammatically broken in a way that demands attention. It sounds like an error, which makes people stop.</p>
+        </div>
+        <div class="layer-row">
+          <span class="layer-name">Retention</span>
+          <p class="layer-val">The format that spread wasn't the music video. It was the transition video — Carpenter posted a TikTok of herself doing a rapid wardrobe transition to the song's drop, accumulating 2.4M likes. The visual withholds the reveal until the beat hits.</p>
+        </div>
+        <div class="layer-row">
+          <span class="layer-name">Engagement</span>
+          <p class="layer-val">Comment sections were overwhelmingly reacting to the lyric, not the video. Grammar debates, linguistics takes, "what does this even mean" threads — all of which extended the content's life cycle far beyond the initial post window.</p>
+        </div>
+        <div class="layer-row">
+          <span class="layer-name">Distribution</span>
+          <p class="layer-val">Spotify changed its autoplay algorithm during this period to recommendations-based, and "Espresso" benefitted. The Chicken Shop Date green screen meme (31M views) launched a second viral wave months after release, resetting the distribution clock.</p>
+        </div>
+        <div class="layer-row">
+          <span class="layer-name">Audio Portability</span>
+          <p class="layer-val">The sound traveled into contexts completely detached from Sabrina Carpenter: bachelorette videos, cooking content, workplace humor. The lyric became a cultural placeholder — people used the sound to signal a vibe, not a fandom.</p>
+        </div>
+      </div>
+
+      <div class="insight-block">
+        <span class="insight-label">Core Insight</span>
+        <p>The most portable audio isn't the most musical moment — it's the most quotable one. "Espresso" went viral on a grammatical glitch, not a melody.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- CASE 2 -->
+  <div class="case-study fade-up delay-1">
+    <div class="case-meta">
+      <div class="case-num">02</div>
+      <div class="case-artist">Chappell Roan</div>
+      <span class="case-song">"Good Luck, Babe!" — 2024</span>
+      <div class="case-type">Platform-Resistant Hit</div>
+    </div>
+    <div class="case-content">
+      <h3>The Setup</h3>
+      <p>
+        "Good Luck, Babe!" is the most analytically interesting case of 2024 because 
+        it succeeded despite the algorithm, not because of it. UMG's ongoing TikTok 
+        licensing dispute meant there was no official sound clip on the platform at launch. 
+        The song still went viral. It debuted at #77 on the Hot 100, climbed to #4, 
+        and crossed 1 billion Spotify streams by November 2024.
+      </p>
+
+      <div class="metric-row">
+        <div class="metric">
+          <span class="metric-val">#4</span>
+          <span class="metric-desc">Billboard Hot 100 Peak</span>
+        </div>
+        <div class="metric">
+          <span class="metric-val">1B+</span>
+          <span class="metric-desc">Spotify Streams</span>
+        </div>
+        <div class="metric">
+          <span class="metric-val">#77→#4</span>
+          <span class="metric-desc">Chart Climb Over Months</span>
+        </div>
+        <div class="metric">
+          <span class="metric-val">6× Plat</span>
+          <span class="metric-desc">RIAA Certification</span>
+        </div>
+      </div>
+
+      <h3>Framework Breakdown</h3>
+      <div class="layer-breakdown">
+        <div class="layer-row">
+          <span class="layer-name">Hook</span>
+          <p class="layer-val">The Coachella performance was the hook — not a TikTok post. The live performance clip spread organically because the spectacle (maximalist production, Roan's stage presence, the medieval costuming at the VMAs) gave people something to post about that didn't require the official audio.</p>
+        </div>
+        <div class="layer-row">
+          <span class="layer-name">Retention</span>
+          <p class="layer-val">The song's emotional architecture is a slow burn — a 1980s power ballad structure where the payoff is withheld until the final chorus. That delayed resolution mirrors what high-retention TikTok content does by design. It built tension that live footage captured naturally.</p>
+        </div>
+        <div class="layer-row">
+          <span class="layer-name">Engagement</span>
+          <p class="layer-val">Comment sections split between the song and Roan's identity — the queer narrative, the backstory of being dropped by Atlantic, the decade of near-misses. The song carried emotional weight that made commenting feel personal. That personal stakes dynamic is extremely rare.</p>
+        </div>
+        <div class="layer-row">
+          <span class="layer-name">Distribution</span>
+          <p class="layer-val">Without an official TikTok sound, the song was distributed through fan-made clips, performance footage, and reaction videos. This created a longer distribution tail — instead of one algorithm spike, there were dozens of independent ignition points over months.</p>
+        </div>
+        <div class="layer-row">
+          <span class="layer-name">Audio Portability</span>
+          <p class="layer-val">The song's queer identity narrative made it a vehicle for community signaling. When people used the audio (official or otherwise), they weren't just sharing a song — they were aligning with a perspective. That ideological portability is a distribution multiplier most songs never access.</p>
+        </div>
+      </div>
+
+      <div class="insight-block">
+        <span class="insight-label">Core Insight</span>
+        <p>Platform gatekeeping only kills songs that depend on the algorithm. Songs with enough community gravity create their own distribution infrastructure — dozens of ignition points instead of one.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- CASE 3 -->
+  <div class="case-study fade-up delay-2">
+    <div class="case-meta">
+      <div class="case-num">03</div>
+      <div class="case-artist">Charli XCX</div>
+      <span class="case-song">brat — Album Cycle 2024</span>
+      <div class="case-type">Aesthetic-Driven Spread</div>
+    </div>
+    <div class="case-content">
+      <h3>The Setup</h3>
+      <p>
+        brat is the most unusual case because the unit of virality wasn't a song — 
+        it was a color. The lime-green album aesthetic became a TikTok identity system 
+        before most people had heard a single track. The album expanded beyond music 
+        into a participatory cultural moment: "brat summer," the font, the green, 
+        the self-aware messiness.
+      </p>
+
+      <div class="metric-row">
+        <div class="metric">
+          <span class="metric-val">brat</span>
+          <span class="metric-desc">Dictionary Word of the Year 2024</span>
+        </div>
+        <div class="metric">
+          <span class="metric-val">80M+</span>
+          <span class="metric-desc">Views on SNL Parody Alone</span>
+        </div>
+        <div class="metric">
+          <span class="metric-val">∞</span>
+          <span class="metric-desc">Sound Recontextualization Events</span>
+        </div>
+      </div>
+
+      <h3>Framework Breakdown</h3>
+      <div class="layer-breakdown">
+        <div class="layer-row">
+          <span class="layer-name">Hook</span>
+          <p class="layer-val">The album art was the hook. A specific shade of green and a lowercase blurry font — instantly recognizable, infinitely reproducible. Before TikTok users could post the audio, they were posting the aesthetic. The visual came first.</p>
+        </div>
+        <div class="layer-row">
+          <span class="layer-name">Retention</span>
+          <p class="layer-val">brat content had unusually high completion rates because it invited participation. The "Apple" dance trend, the "brat behavior" debates, the Harris campaign adoption — each new application of the aesthetic reset the retention cycle for a new audience segment.</p>
+        </div>
+        <div class="layer-row">
+          <span class="layer-name">Engagement</span>
+          <p class="layer-val">The comment engine was identity-driven: "am I brat?" became the dominant question. That self-categorization impulse generates an extraordinary volume of engagement because it's personal — it's not about the music, it's about the viewer's relationship to the aesthetic.</p>
+        </div>
+        <div class="layer-row">
+          <span class="layer-name">Distribution</span>
+          <p class="layer-val">The brat cycle had no central algorithm spike. It had sustained distributed growth across fashion, politics, meme culture, celebrity coverage, and then back to music. Each context introduced a new audience segment with zero decay in the original core fanbase.</p>
+        </div>
+        <div class="layer-row">
+          <span class="layer-name">Audio Portability</span>
+          <p class="layer-val">The audio traveled inside the aesthetic — people who had never heard a Charli XCX song used brat sounds because the green background communicated the whole identity system. The sound became a costume. That's the highest form of audio portability: where using the sound is a statement of identity.</p>
+        </div>
+      </div>
+
+      <div class="insight-block">
+        <span class="insight-label">Core Insight</span>
+        <p>When audio is embedded in a visual identity system, it travels as an aesthetic — not a song. The distribution ceiling is no longer "people who like this music." It's "people who want to perform this identity."</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SYNTHESIS -->
+<section id="synthesis">
+  <div class="section-label">03 — Pattern Synthesis</div>
+  <h2>What the Three Cases<br><em>Prove Together</em></h2>
+  <p>Individually, each case study tells a story. Together, they reveal a system. These are the four cross-case patterns that hold regardless of artist, genre, or platform conditions.</p>
+
+  <div class="insight-grid fade-up">
+    <div class="insight-card">
+      <div class="num">01</div>
+      <h4>Confusion outperforms clarity for retention</h4>
+      <p>All three songs contained an element that made audiences stop and process — a grammatical glitch, a political controversy, a color that didn't make sense for pop. Unresolved cognitive friction keeps people in the comments longer.</p>
+    </div>
+    <div class="insight-card">
+      <div class="num">02</div>
+      <h4>Audio portability is a separate variable from audio quality</h4>
+      <p>The songs that spread furthest weren't the most technically impressive. They were the most <em>usable</em> — they gave people a vessel to perform an identity, signal an affiliation, or land a joke. Portability is a design problem, not a talent problem.</p>
+    </div>
+    <div class="insight-card">
+      <div class="num">03</div>
+      <h4>Multiple ignition points beat one algorithm spike</h4>
+      <p>The longest-running viral cycles (brat, Good Luck Babe) had no single origin moment. They burned slowly across multiple contexts and communities. The TikTok algorithm optimizes for spikes; the most durable virality routes around it.</p>
+    </div>
+    <div class="insight-card">
+      <div class="num">04</div>
+      <h4>Comments signal which layer the song is activating</h4>
+      <p>Espresso: comments about the lyric (hook). Good Luck Babe: comments about the artist's identity (engagement). brat: comments about the listener's identity (audio portability). The comment section is the fastest diagnostic for where a song sits in the framework.</p>
+    </div>
+  </div>
+</section>
+
+<!-- IMPLICATIONS -->
+<section id="implications">
+  <div class="section-label">04 — Strategic Implications</div>
+  <h2>What Brands &<br><em>Labels Should Do Now</em></h2>
+  <p>
+    These aren't recommendations for going viral. Virality isn't a strategy — it's an outcome. 
+    These are structural shifts in how music content should be built, released, and measured 
+    given what the data actually shows.
+  </p>
+
+  <div class="implication-list fade-up">
+    <div class="implication-item">
+      <span class="impl-idx">01</span>
+      <span class="impl-text">Design for loops, not endings — the payoff that satisfies kills rewatches</span>
+      <span class="impl-tag">Production</span>
+    </div>
+    <div class="implication-item">
+      <span class="impl-idx">02</span>
+      <span class="impl-text">Engineer one portable moment per release — a lyric, a visual, a motion — that travels independent of the song</span>
+      <span class="impl-tag">Release Strategy</span>
+    </div>
+    <div class="implication-item">
+      <span class="impl-idx">03</span>
+      <span class="impl-text">Measure audio uses and duet/stitch behavior, not just plays — those metrics predict the distribution tail</span>
+      <span class="impl-tag">Analytics</span>
+    </div>
+    <div class="implication-item">
+      <span class="impl-idx">04</span>
+      <span class="impl-text">Build an identity layer into the release: the audience needs something to perform, not just something to listen to</span>
+      <span class="impl-tag">Brand Strategy</span>
+    </div>
+    <div class="implication-item">
+      <span class="impl-idx">05</span>
+      <span class="impl-text">Treat platform friction as a distribution variable — Good Luck Babe proved that being blocked from TikTok can be survived if community gravity is strong enough</span>
+      <span class="impl-tag">Platform Risk</span>
+    </div>
+    <div class="implication-item">
+      <span class="impl-idx">06</span>
+      <span class="impl-text">Watch the comment section before spending on ads — it tells you which layer is working and what to amplify</span>
+      <span class="impl-tag">Optimization</span>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-left">
+    <span class="brand">Lyles Mom</span>
+    <p>Audience Intelligence & Personalization Strategist. Portfolio at lylesmomportfolio.my.canva.site</p>
+  </div>
+  <div class="footer-right">
+    Platform Strategy — Music & TikTok<br>
+    Portfolio Project — 2024 Data<br>
+    <br>
+    Part of Cult Circulation
+  </div>
+</footer>
+
+<script>
+  // Progress bar
+  window.addEventListener('scroll', () => {
+    const total = document.body.scrollHeight - window.innerHeight;
+    const pct = (window.scrollY / total) * 100;
+    document.getElementById('progress').style.width = pct + '%';
+  });
+
+  // Fade-up on scroll
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add('visible');
+      }
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+</script>
+</body>
+</html>
